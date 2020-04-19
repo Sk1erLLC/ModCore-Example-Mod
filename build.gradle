@@ -7,7 +7,6 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-
         flatDir dirs: 'libs'
     }
     dependencies {

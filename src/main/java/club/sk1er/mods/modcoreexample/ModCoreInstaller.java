@@ -38,11 +38,7 @@ public class ModCoreInstaller {
     private static boolean errored = false;
     private static String error;
     private static File dataDir = null;
-    private static boolean isRunningModCore = false;
 
-    public static boolean isIsRunningModCore() {
-        return isRunningModCore;
-    }
 
     private static boolean isInitalized() {
         try {
@@ -82,22 +78,18 @@ public class ModCoreInstaller {
         return new JsonHolder();
     }
 
-    public static void initializeModCore(File gameDir) {
-        if (!isIsRunningModCore()) {
-            return;
-        }
+    private static boolean initializeModCore(File gameDir) {
         try {
-            Class<?> modCore = Class.forName(className);
-            Method instanceMethod = modCore.getMethod("getInstance");
+            Class<?> modCore = Class.forName("club.sk1er.mods.core.tweaker.ModCoreTweaker");
             Method initialize = modCore.getMethod("initialize", File.class);
-            Object modCoreObject = instanceMethod.invoke(null);
-            initialize.invoke(modCoreObject, gameDir);
+            initialize.invoke(null, gameDir);
             System.out.println("Loaded ModCore Successfully");
-            return;
+            return true;
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
-        System.out.println("Did NOT ModCore Successfully");
+        System.out.println("Did NOT initialize ModCore Successfully");
+        return false;
     }
 
     public static int initialize(File gameDir, String minecraftVersion) {
@@ -136,8 +128,8 @@ public class ModCoreInstaller {
             bail("Something went wrong and it did not add the jar to the class path. Local file exists? " + modcoreFile.exists());
             return 3;
         }
-        isRunningModCore = true;
-        return 0;
+        return initializeModCore(gameDir) ? 0 : 4;
+
     }
 
 
