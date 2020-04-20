@@ -19,7 +19,7 @@ public class RequiredTweaker implements ITweaker {
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader) {
         //Minecraft Version
-        int initialize = ModCoreInstaller.initialize(gameDir, "1.8.9-forge");
+        int initialize = ModCoreInstaller.initialize(gameDir, "1.8.9_forge");
         System.out.println("ModCore Init Status From ExampleMod " + initialize);
     }
 

@@ -58,7 +58,7 @@ processResources {
 
 jar {
     manifest {
-        attributes "FMLCorePlugin": "club.sk1er.mods.modcoreexample.forge.FMLLoadingPlugin",
+        attributes "TweakClass": "club.sk1er.mods.modcoreexample.forge.RequiredTweaker",
                 "ModSide": "CLIENT",
                 "FMLCorePluginContainsFMLMod": "Yes, yes it does"
     }

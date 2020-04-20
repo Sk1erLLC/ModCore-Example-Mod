@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -20,21 +19,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ModCoreInstaller {
 
     private static final String VERSION_URL = "https://api.sk1er.club/modcore_versions";
-    private static final String className = "club.sk1er.mods.core.ModCore";
+    private static final String className = "club.sk1er.mods.core.tweaker.ModCoreTweaker";
     private static boolean errored = false;
     private static String error;
     private static File dataDir = null;
@@ -45,12 +43,8 @@ public class ModCoreInstaller {
             LinkedHashSet<String> objects = new LinkedHashSet<>();
             objects.add(className);
             Launch.classLoader.clearNegativeEntries(objects);
-            Field invalidClasses = LaunchClassLoader.class.getDeclaredField("invalidClasses");
-            invalidClasses.setAccessible(true);
-            Object obj = invalidClasses.get(ModCoreInstaller.class.getClassLoader());
-            ((Set<String>) obj).remove(className);
-            return Class.forName("club.sk1er.mods.core.ModCore") != null;
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException ignored) {
+            return Class.forName(className) != null;
+        } catch (ClassNotFoundException ignored) {
             ignored.printStackTrace();
         }
         return false;
@@ -102,6 +96,10 @@ public class ModCoreInstaller {
             }
         }
         JsonHolder jsonHolder = fetchJSON(VERSION_URL);
+        if (!jsonHolder.has(minecraftVersion)) {
+            System.out.println("No ModCore target for " + minecraftVersion + ". Aborting install");
+            return -2;
+        }
         String latestRemote = jsonHolder.optString(minecraftVersion);
         boolean failed = jsonHolder.getKeys().size() == 0 || (jsonHolder.has("success") && !jsonHolder.optBoolean("success"));
 
@@ -136,9 +134,9 @@ public class ModCoreInstaller {
     public static void addToClasspath(File file) {
         try {
             URL url = file.toURI().toURL();
-
+            Launch.classLoader.addURL(url);
             ClassLoader classLoader = ModCoreInstaller.class.getClassLoader();
-            Method method = classLoader.getClass().getDeclaredMethod("addURL", URL.class);
+            Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
             method.setAccessible(true);
             method.invoke(classLoader, url);
         } catch (Exception e) {
